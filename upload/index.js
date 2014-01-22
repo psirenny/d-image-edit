@@ -5,7 +5,7 @@ function update(model, dom) {
   var file = model.get('image.file')
   if (!file) return;
 
-  imageUtil.create(file, function (image) {
+  imageUtil.create(file, function (err, image) {
     var containerSize = model.get('size')
       , containerHeight = model.get('height') || containerSize
       , containerWidth = model.get('width') || containerSize
@@ -18,8 +18,10 @@ function update(model, dom) {
       , scale = (minScale + maxScale) / 2
       , zoom = dom.element('zoom');
 
-    imageUtil.resize(image, imageWidth, imageHeight, function (image) {
+    imageUtil.resize(image, imageWidth, imageHeight, function (err, image) {
       model.set('image.canScale', maxScale > minScale);
+      model.set('image.maxScale', maxScale);
+      model.set('image.minScale', minScale);
       model.set('image.src', image.src);
 
       $('.js-panzoom').panzoom({
