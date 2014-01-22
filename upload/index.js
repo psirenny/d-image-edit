@@ -15,6 +15,11 @@ exports.create = function (model, dom) {
     update(model, dom);
   });
 
+  model.on('change', 'image.scale', function (scale, prev, passed) {
+    if (passed.ignore) return;
+    $('.js-panzoom').panzoom('zoom', parseFloat(scale));
+  });
+
   model.on('change', 'image.transform', function (matrix, prev, passed) {
     edit(model, dom);
   });
@@ -89,6 +94,7 @@ function update(model, dom) {
       var contain = panzoomUtil.contain(containerWidth, containerHeight, imageWidth, imageHeight);
 
       var transform = _.debounce(function (matrix) {
+        model.pass({ignore: true}).set('image.scale', matrix[0]);
         model.set('image.transform', matrix);
       }, 100);
 
