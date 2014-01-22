@@ -1,13 +1,18 @@
-exports.create = function (file, callback) {
-  var reader = new FileReader();
+exports.create = function (data, callback) {
+  var image = new Image()
+    , reader = new FileReader();
+
+  if (typeof data === 'string') {
+    image.src = data;
+    return callback(null, image);
+  }
 
   reader.onload = function (e) {
-    var image = new Image();
     image.src = e.target.result;
     callback(null, image);
   };
 
-  reader.readAsDataURL(file);
+  reader.readAsDataURL(data);
 };
 
 exports.resize = function (image, width, height, callback) {

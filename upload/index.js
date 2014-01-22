@@ -1,11 +1,74 @@
-var imageUtil = require('./util/image')
+var _ = require('lodash')
+  , imageUtil = require('./util/image')
   , panzoomUtil = require('./util/panzoom');
 
-function update(model, dom) {
-  var file = model.get('image.file')
-  if (!file) return;
+exports.create = function (model, dom) {
+  var dropzone = dom.element('dropzone')
+    , input = dom.element('input');
 
-  imageUtil.create(file, function (err, image) {
+  function selectImage(file) {
+    model.set('image.data', file);
+    update(model, dom);
+  }
+
+  model.on('change', 'height', function () {
+    update(model, dom);
+  });
+
+  model.on('change', 'image.transform', function (matrix, prev, passed) {
+    edit(model, dom);
+  });
+
+  model.on('change', 'size', function () {
+    update(model, dom);
+  });
+
+  model.on('change', 'width', function () {
+    update(model, dom);
+  });
+
+  dom.addListener(input, 'change', function (e) {
+    selectImage(e.target.files[0]);
+  });
+
+  dom.addListener(dropzone, 'dragenter', function (e) {
+    e.stopPropagation();
+    e.preventDefault();
+  });
+
+  dom.addListener(dropzone, 'dragover', function (e) {
+    e.stopPropagation();
+    e.preventDefault();
+  });
+
+  dom.addListener(dropzone, 'drop', function (e) {
+    e.stopPropagation();
+    e.preventDefault();
+    var file = e.dataTransfer.files[0];
+    var url = e.dataTransfer.getData('text');
+    selectImage(file || url);
+  });
+};
+
+function edit(model, dom) {
+  var containerSize = model.get('size')
+    , containerHeight = model.get('height') || containerSize
+    , containerWidth = model.get('width') || containerSize
+    , image = model.get('image.object')
+    , matrix = model.get('image.transform');
+
+  imageUtil.transform(image, matrix, containerWidth, containerHeight,
+    function (err, image) {
+      model.set('image.edited.object', image);
+    }
+  );
+}
+
+function update(model, dom) {
+  var data = model.get('image.data')
+  if (!data) return;
+
+  imageUtil.create(data, function (err, image) {
     var containerSize = model.get('size')
       , containerHeight = model.get('height') || containerSize
       , containerWidth = model.get('width') || containerSize
@@ -22,11 +85,20 @@ function update(model, dom) {
       model.set('image.canScale', maxScale > minScale);
       model.set('image.maxScale', maxScale);
       model.set('image.minScale', minScale);
-      model.set('image.src', image.src);
+      model.set('image.object', image);
+      var contain = panzoomUtil.contain(containerWidth, containerHeight, imageWidth, imageHeight);
+
+      var transform = _.debounce(function (matrix) {
+        model.set('image.transform', matrix);
+      }, 100);
 
       $('.js-panzoom').panzoom({
         $zoomRange: $(zoom),
-        onChange: panzoomUtil.contain(containerWidth, containerHeight, image.width, image.height),
+        contain: 'invert',
+        onChange: function (e, panzoom, matrix) {
+          contain(e, panzoom, matrix);
+          transform(matrix);
+        },
         maxScale: maxScale,
         minScale: minScale
       });
@@ -35,54 +107,3 @@ function update(model, dom) {
     });
   });
 }
-
-exports.create = function (model, dom) {
-  var dropzone = dom.element('dropzone')
-    , input = dom.element('input');
-
-  function selectFile(file) {
-    model.set('image.file', file);
-    update(model, dom);
-  }
-
-  model.on('change', 'file', function () {
-    selectFile(model.get('file'));
-  });
-
-  model.on('change', 'height', function () {
-    update(model, dom);
-  });
-
-  model.on('change', 'size', function () {
-    update(model, dom);
-  });
-
-  model.on('change', 'width', function () {
-    update(model, dom);
-  });
-
-  dom.addListener(input, 'change', function (e) {
-    selectFile(e.target.files[0]);
-  });
-
-  dom.addListener(dropzone, 'dragenter', function (e) {
-    e.stopPropagation();
-    e.preventDefault();
-  });
-
-  dom.addListener(dropzone, 'dragover', function (e) {
-    e.stopPropagation();
-    e.preventDefault();
-  });
-
-  dom.addListener(dropzone, 'drop', function (e) {
-    e.stopPropagation();
-    e.preventDefault();
-    selectFile(e.dataTransfer.files[0]);
-  });
-};
-
-exports.reset = function () {
-  this.model.del('image.file');
-  this.model.del('image.src');
-};
