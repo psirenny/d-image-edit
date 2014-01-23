@@ -3,6 +3,9 @@
   "bugs": {
     "url": "https://github.com/psirenny/derby-ui-photo-upload/issues"
   },
+  "dependencies": {
+    "blueimp-canvas-to-blob": "*"
+  },
   "description": "A Derby JS component library for uploading photos.",
   "keywords": [
     "derby",

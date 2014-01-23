@@ -64,13 +64,16 @@ function edit(model, dom) {
 
   imageUtil.transform(image, matrix, containerWidth, containerHeight,
     function (err, image) {
-      model.set('image.edited.object', image);
+      imageUtil.toBlob(image, function (err, blob) {
+        model.set('image.edited.blob', blob);
+        model.set('image.edited.object', image);
+      })
     }
   );
 }
 
 function update(model, dom) {
-  var data = model.get('image.data')
+  var data = model.get('image.data');
   if (!data) return;
 
   imageUtil.create(data, function (err, image) {

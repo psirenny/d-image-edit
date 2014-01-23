@@ -1,3 +1,5 @@
+var canvasToBlob = require('blueimp-canvas-to-blob/js/canvas-to-blob');
+
 exports.create = function (data, callback) {
   var image = new Image()
     , reader = new FileReader();
@@ -29,6 +31,18 @@ exports.resize = function (image, width, height, callback) {
   }
 
   callback(null, resizedImage);
+};
+
+exports.toBlob = function (image, callback) {
+  var canvas = document.createElement('canvas')
+    , context = canvas.getContext('2d');
+
+  canvas.width = image.width;
+  canvas.height = image.height;
+  context.drawImage(image, 0, 0);
+  canvas.toBlob(function (blob) {
+    callback(null, blob);
+  });
 };
 
 exports.transform = function (image, matrix, containerWidth, containerHeight, callback) {
