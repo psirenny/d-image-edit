@@ -8,11 +8,11 @@ exports.create = function (model, dom) {
 
   function selectImage(file) {
     model.set('image.data', file);
-    update(model, dom);
+    load(model, dom);
   }
 
   model.on('change', 'height', function () {
-    update(model, dom);
+    load(model, dom);
   });
 
   model.on('change', 'image.scale', function (scale, prev, passed) {
@@ -25,11 +25,11 @@ exports.create = function (model, dom) {
   });
 
   model.on('change', 'size', function () {
-    update(model, dom);
+    load(model, dom);
   });
 
   model.on('change', 'width', function () {
-    update(model, dom);
+    load(model, dom);
   });
 
   dom.addListener(input, 'change', function (e) {
@@ -72,7 +72,7 @@ function edit(model, dom) {
   );
 }
 
-function update(model, dom) {
+function load(model, dom) {
   var data = model.get('image.data');
   if (!data) return;
 
