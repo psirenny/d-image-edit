@@ -3,8 +3,9 @@ var _ = require('lodash')
   , panzoomUtil = require('./util/panzoom');
 
 exports.create = function (model, dom) {
-  var dropzone = dom.element('dropzone')
-    , input = dom.element('input');
+  var $dropzone = dom.element('dropzone')
+    , $input = dom.element('input')
+    , $scale = dom.element('scale');
 
   function selectImage(file) {
     model.set('image.data', file);
@@ -17,10 +18,11 @@ exports.create = function (model, dom) {
 
   model.on('change', 'image.scale', function (scale, prev, passed) {
     if (passed.ignore) return;
-    $('.js-panzoom').panzoom('zoom', parseFloat(scale));
+    $($scale).panzoom('zoom', parseFloat(scale));
   });
 
   model.on('change', 'image.transform', function (matrix, prev, passed) {
+    if (passed.ignore) return;
     edit(model, dom);
   });
 
@@ -32,27 +34,32 @@ exports.create = function (model, dom) {
     load(model, dom);
   });
 
-  dom.addListener(input, 'change', function (e) {
+  dom.addListener($input, 'change', function (e) {
     selectImage(e.target.files[0]);
   });
 
-  dom.addListener(dropzone, 'dragenter', function (e) {
+  dom.addListener($dropzone, 'dragenter', function (e) {
     e.stopPropagation();
     e.preventDefault();
   });
 
-  dom.addListener(dropzone, 'dragover', function (e) {
+  dom.addListener($dropzone, 'dragover', function (e) {
     e.stopPropagation();
     e.preventDefault();
   });
 
-  dom.addListener(dropzone, 'drop', function (e) {
+  dom.addListener($dropzone, 'drop', function (e) {
     e.stopPropagation();
     e.preventDefault();
     var file = e.dataTransfer.files[0];
     var url = e.dataTransfer.getData('text');
     selectImage(file || url);
   });
+};
+
+exports.reset = function () {
+  var $image = this.dom.element('image');
+  $($image).panzoom('reset');
 };
 
 function edit(model, dom) {
@@ -76,8 +83,13 @@ function load(model, dom) {
   var data = model.get('image.data');
   if (!data) return;
 
+  model.set('loading', true);
+  model.pass({ignore: true}).setNull('image.transform', [1, 0, 0, 1, 0, 0]);
   imageUtil.create(data, function (err, image) {
-    var containerSize = model.get('size')
+    var $image = dom.element('image')
+      , $reset = dom.element('reset')
+      , $scale = dom.element('scale')
+      , containerSize = model.get('size')
       , containerHeight = model.get('height') || containerSize
       , containerWidth = model.get('width') || containerSize
       , imageHeight = Math.max(containerHeight, image.height)
@@ -85,9 +97,7 @@ function load(model, dom) {
       , minScaleX = containerWidth / imageWidth
       , minScaleY = containerHeight / imageHeight
       , minScale = Math.max(minScaleX, minScaleY)
-      , maxScale = Math.max(minScale, 1)
-      , scale = (minScale + maxScale) / 2
-      , zoom = dom.element('zoom');
+      , maxScale = Math.max(minScale, 1);
 
     imageUtil.resize(image, imageWidth, imageHeight, function (err, image) {
       model.set('image.canScale', maxScale > minScale);
@@ -101,18 +111,21 @@ function load(model, dom) {
         model.set('image.transform', matrix);
       }, 100);
 
-      $('.js-panzoom').panzoom({
-        $zoomRange: $(zoom),
+      $($image).panzoom({
+        $reset: $($reset),
+        $zoomRange: $($scale),
         contain: 'invert',
         onChange: function (e, panzoom, matrix) {
           contain(e, panzoom, matrix);
           transform(matrix);
         },
         maxScale: maxScale,
-        minScale: minScale
+        minScale: minScale,
+        startTransform: model.get('image.transform')
       });
 
-      $('.js-panzoom').panzoom('zoom', scale);
+      model.del('loading');
+      edit(model, dom);
     });
   });
 }

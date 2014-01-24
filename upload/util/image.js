@@ -20,17 +20,20 @@ exports.create = function (data, callback) {
 exports.resize = function (image, width, height, callback) {
   var canvas = document.createElement('canvas')
     , context = canvas.getContext('2d')
-    , resizedImage = image;
+    , resizedImage = new Image();
 
-  if (image.width !== width || image.height === !height) {
-    canvas.width = width;
-    canvas.height = height;
-    context.drawImage(image, 0, 0, width, height);
-    resizedImage = new Image();
-    resizedImage.src = canvas.toDataURL('image/png');
+  if (image.width === width && image.height === height) {
+    return callback(null, image);
   }
 
-  callback(null, resizedImage);
+  resizedImage.onload = function () {
+    callback(null, resizedImage);
+  };
+
+  canvas.width = width;
+  canvas.height = height;
+  context.drawImage(image, 0, 0, width, height);
+  resizedImage.src = canvas.toDataURL('image/png');
 };
 
 exports.toBlob = function (image, callback) {
@@ -52,11 +55,14 @@ exports.transform = function (image, matrix, containerWidth, containerHeight, ca
     , y = (image.height - image.height * matrix[3]) / 2
     , transformedImage = new Image();
 
+  transformedImage.onload = function () {
+    callback(null, transformedImage);
+  };
+
   canvas.width = containerWidth;
   canvas.height = containerHeight;
   context.translate(x, y);
   context.transform.apply(context, matrix);
   context.drawImage(image, 0, 0);
   transformedImage.src = canvas.toDataURL('image/png');
-  callback(null, transformedImage);
 };
