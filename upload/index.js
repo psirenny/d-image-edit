@@ -3,7 +3,9 @@ var _ = require('lodash')
   , panzoomUtil = require('./util/panzoom');
 
 exports.create = function (model, dom) {
-  var $dropzone = dom.element('dropzone')
+  var $el = document.createElement()
+    , $clear = dom.element('clear')
+    , $dropzone = dom.element('dropzone')
     , $input = dom.element('input')
     , $scale = dom.element('scale');
 
@@ -32,6 +34,18 @@ exports.create = function (model, dom) {
 
   model.on('change', 'width', function () {
     load(model, dom);
+  });
+
+  dom.addListener($clear || $el, 'click', function () {
+    var $newInput = $($input).val('').clone(true)[0];
+    $($input).replaceWith($newInput);
+    $input = $newInput;
+    model.del('image');
+    model.set('image.object.src', '');
+
+    dom.addListener($input, 'change', function (e) {
+      selectImage(e.target.files[0]);
+    });
   });
 
   dom.addListener($input, 'change', function (e) {
@@ -106,7 +120,7 @@ function load(model, dom) {
       model.set('image.object', image);
       var contain = panzoomUtil.contain(containerWidth, containerHeight, imageWidth, imageHeight);
 
-      var transform = _.debounce(function (matrix) {
+      var transform = _.debounce(function (e, panzoom, matrix) {
         model.pass({ignore: true}).set('image.scale', matrix[0]);
         model.set('image.transform', matrix);
       }, 100);
@@ -115,10 +129,7 @@ function load(model, dom) {
         $reset: $($reset),
         $zoomRange: $($scale),
         contain: 'invert',
-        onChange: function (e, panzoom, matrix) {
-          contain(e, panzoom, matrix);
-          transform(matrix);
-        },
+        onChange: transform,
         maxScale: maxScale,
         minScale: minScale,
         startTransform: model.get('image.transform')
