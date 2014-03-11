@@ -3,7 +3,7 @@ var _ = require('lodash')
   , panzoomUtil = require('./util/panzoom');
 
 exports.create = function (model, dom) {
-  var $el = document.createElement()
+  var $el = document.createElement('div')
     , $clear = dom.element('clear')
     , $dropzone = dom.element('dropzone')
     , $input = dom.element('input')
