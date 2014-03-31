@@ -1,5 +1,3 @@
-var canvasToBlob = require('blueimp-canvas-to-blob/js/canvas-to-blob');
-
 exports.create = function (data, callback) {
   var image = new Image()
     , reader = new FileReader();
