@@ -1,6 +1,5 @@
 var _ = require('lodash')
-  , imageUtil = require('./util/image')
-  , panzoomUtil = require('./util/panzoom');
+  , imageUtil = require('./util/image');
 
 exports.create = function (model, dom) {
   var $el = document.createElement('div')
@@ -116,7 +115,6 @@ function load(model, dom) {
       model.set('image.maxScale', maxScale);
       model.set('image.minScale', minScale);
       model.set('image.object', image);
-      var contain = panzoomUtil.contain(containerWidth, containerHeight, imageWidth, imageHeight);
 
       var transform = _.debounce(function (e, panzoom, matrix) {
         model.silent().set('image.scale', matrix[0]);
