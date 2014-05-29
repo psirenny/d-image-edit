@@ -19,12 +19,10 @@ exports.create = function (model, dom) {
   });
 
   model.on('change', 'image.scale', function (scale, prev, passed) {
-    if (passed.ignore) return;
     $($scale).panzoom('zoom', parseFloat(scale));
   });
 
   model.on('change', 'image.transform', function (matrix, prev, passed) {
-    if (passed.ignore) return;
     edit(model, dom);
   });
 
@@ -98,7 +96,7 @@ function load(model, dom) {
   if (!data) return;
 
   model.set('loading', true);
-  model.pass({ignore: true}).setNull('image.transform', [1, 0, 0, 1, 0, 0]);
+  model.silent().setNull('image.transform', [1, 0, 0, 1, 0, 0]);
   imageUtil.create(data, function (err, image) {
     var $image = dom.element('image')
       , $reset = dom.element('reset')
@@ -121,7 +119,7 @@ function load(model, dom) {
       var contain = panzoomUtil.contain(containerWidth, containerHeight, imageWidth, imageHeight);
 
       var transform = _.debounce(function (e, panzoom, matrix) {
-        model.pass({ignore: true}).set('image.scale', matrix[0]);
+        model.silent().set('image.scale', matrix[0]);
         model.set('image.transform', matrix);
       }, 100);
 
