@@ -74,13 +74,17 @@ exports.reset = function () {
 };
 
 function edit(model, dom) {
-  var containerSize = model.get('size')
-    , containerHeight = model.get('height') || containerSize
-    , containerWidth = model.get('width') || containerSize
+  var $container = $(dom.element('container'))
+    , targetSize = model.get('size')
+    , targetHeight = model.get('height') || targetSize
+    , targetWidth = model.get('width') || targetSize
+    , contained = model.get('contained')
+    , containerHeight = contained ? $container.height() : targetHeight
+    , containerWidth = contained ? $container.width() : targetWidth
     , image = model.get('image.object')
     , matrix = model.get('image.transform');
 
-  imageUtil.transform(image, matrix, containerWidth, containerHeight,
+  imageUtil.transform(image, matrix, containerWidth, containerHeight, targetWidth, targetHeight,
     function (err, image) {
       imageUtil.toBlob(image, function (err, blob) {
         model.set('image.edited.blob', blob);
@@ -91,24 +95,32 @@ function edit(model, dom) {
 }
 
 function load(model, dom) {
+  var $container = $(dom.element('container'));
   var data = model.get('image.data');
   if (!data) return;
 
   model.set('loading', true);
-  model.silent().setNull('image.transform', [1, 0, 0, 1, 0, 0]);
   imageUtil.create(data, function (err, image) {
     var $image = dom.element('image')
       , $reset = dom.element('reset')
       , $scale = dom.element('scale')
-      , containerSize = model.get('size')
-      , containerHeight = model.get('height') || containerSize
-      , containerWidth = model.get('width') || containerSize
+      , targetSize = model.get('size')
+      , targetHeight = model.get('height') || targetSize
+      , targetWidth = model.get('width') || targetSize
+      , contained = model.get('contained')
+      , containerHeight = contained ? $container.height() : targetHeight
+      , containerWidth = contained ? $container.width() : targetWidth
       , imageHeight = Math.max(containerHeight, image.height)
       , imageWidth = Math.max(containerWidth, image.width)
       , minScaleX = containerWidth / imageWidth
       , minScaleY = containerHeight / imageHeight
       , minScale = Math.max(minScaleX, minScaleY)
-      , maxScale = Math.max(minScale, 1);
+      , maxScaleX = containerWidth / targetWidth
+      , maxScaleY = containerHeight / targetHeight
+      , maxScale = Math.max(maxScaleX, maxScaleY)
+      , offsetX = -maxScale * imageWidth
+      , offsetY = -maxScale * imageHeight
+      , matrix = [maxScale, 0, 0, maxScale, offsetX, offsetY];
 
     imageUtil.resize(image, imageWidth, imageHeight, function (err, image) {
       model.set('image.canScale', maxScale > minScale);
@@ -128,9 +140,10 @@ function load(model, dom) {
         onChange: transform,
         maxScale: maxScale,
         minScale: minScale,
-        startTransform: model.get('image.transform')
+        startTransform: 'matrix(' + matrix.join(',') + ')'
       });
 
+      model.set('image.transform', matrix);
       model.del('loading');
       edit(model, dom);
     });

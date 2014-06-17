@@ -1,3 +1,5 @@
+var _ = require('lodash');
+
 exports.create = function (data, callback) {
   var image = new Image()
     , reader = new FileReader();
@@ -38,6 +40,7 @@ exports.toBlob = function (image, callback) {
   var canvas = document.createElement('canvas')
     , ctx = canvas.getContext('2d');
 
+  if (!image) return callback(null, null);
   canvas.width = image.width;
   canvas.height = image.height;
   ctx.drawImage(image, 0, 0);
@@ -46,25 +49,32 @@ exports.toBlob = function (image, callback) {
   });
 };
 
-exports.transform = function (image, matrix, canvasWidth, canvasHeight, callback) {
+exports.transform = function (image, matrix, fromWidth, fromHeight, toWidth, toHeight, callback) {
+  console.log(matrix);
+  if (!matrix) return callback(image);
+
   var canvas = document.createElement('canvas')
     , ctx = canvas.getContext('2d')
-    , x1 = (image.width - (image.width * matrix[0])) / 2
-    , x2 = matrix[4] + x1
-    , y1 = (image.height - (image.height * matrix[3])) / 2
-    , y2 = matrix[5] + y1
+    , ratioX = toWidth / fromWidth
+    , ratioY = toHeight / fromHeight
+    , scaleX = matrix[0] * ratioX
+    , scaleY = matrix[3] * ratioY
+    , originX = (image.width / 2) * (1 - scaleX)
+    , originY = (image.height / 2) * (1 - scaleY)
+    , offsetX = (image.width / 2) * (ratioX - 1)
+    , offsetY = (image.height / 2) * (ratioY - 1)
+    , translateX = matrix[4] * ratioX + offsetX
+    , translateY = matrix[5] * ratioY + offsetY
+    , transformedMatrix = [scaleX, 0, 0, scaleY, originX + translateX, originY + translateY]
     , transformedImage = new Image();
 
   transformedImage.onload = function () {
     callback(null, transformedImage);
   };
 
-  canvas.width = canvasWidth;
-  canvas.height = canvasHeight;
-  ctx.translate(x1, y1);
-  ctx.transform.apply(ctx, matrix);
-  ctx.scale(2, 2);
-  ctx.translate(x2, y2);
+  canvas.width = toWidth;
+  canvas.height = toHeight;
+  ctx.transform.apply(ctx, transformedMatrix);
   ctx.drawImage(image, 0, 0);
   transformedImage.src = canvas.toDataURL('image/png');
 };
