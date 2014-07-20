@@ -1,28 +1,30 @@
 {
-  "author": "psirenny <djtorres0@gmail.com>",
+  "author": "Dennis Torres <djtorres0@gmail.com>",
   "bugs": {
-    "url": "https://github.com/psirenny/derby-ui-photo-upload/issues"
+    "url": "https://github.com/psirenny/d-image-upload/issues"
   },
   "dependencies": {
-    "lodash": "*"
+    "debounce": "^1.0.0",
+    "lodash": "^2.4.1"
   },
-  "description": "A Derby JS component library for uploading photos.",
+  "description": "A Derby JS component for uploading images.",
   "keywords": [
     "derby",
+    "image",
     "photo",
-    "upload",
-    "ui"
+    "picture",
+    "upload"
   ],
   "license": "MIT",
   "main": "index.js",
-  "name": "derby-ui-photo-upload",
+  "name": "d-image-upload",
   "readmeFilename": "README.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/psirenny/derby-ui-photo-upload.git"
+    "url": "https://github.com/psirenny/d-image-upload.git"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "0.2.5"
+  "version": "0.3.0"
 }

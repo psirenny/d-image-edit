@@ -1,16 +1,22 @@
-Derby Photo Upload
+Derby Image Upload
 ==================
 
-A [Derby JS](http://derbyjs.com) component library for uploading photos.
+A [Derby JS](http://derbyjs.com) component library for uploading images.
 
 Installation
 ------------
 
-    $ npm install derby-ui-photo-upload
+    $ npm install d-image-upload --save
 
-In *"lib/app/index.js"* include:
+Define a view:
 
-    app.use(require('derby-ui-photo-upload'));
+    <image-upload:>
+      <div as="dropzone">
+        <label>Upload</label>
+        <input type="file" as="input">
+        <img alt="" as="image">
+      </div>
 
-Usage
------
+Assign it the component:
+
+    app.use('image-upload', require('d-image-upload'));

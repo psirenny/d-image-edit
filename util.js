@@ -1,8 +1,8 @@
 var _ = require('lodash');
 
 exports.create = function (data, callback) {
-  var image = new Image()
-    , reader = new FileReader();
+  var image = new Image();
+  var reader = new FileReader();
 
   if (typeof data === 'string') {
     image.src = data;
@@ -10,17 +10,20 @@ exports.create = function (data, callback) {
   }
 
   reader.onload = function (e) {
+    image.onload = function () {
+      callback(null, image);
+    };
+
     image.src = e.target.result;
-    callback(null, image);
   };
 
   reader.readAsDataURL(data);
 };
 
 exports.resize = function (image, width, height, callback) {
-  var canvas = document.createElement('canvas')
-    , ctx = canvas.getContext('2d')
-    , resizedImage = new Image();
+  var canvas = document.createElement('canvas');
+  var ctx = canvas.getContext('2d');
+  var resizedImage = new Image();
 
   if (image.width === width && image.height === height) {
     return callback(null, image);
@@ -50,7 +53,6 @@ exports.toBlob = function (image, callback) {
 };
 
 exports.transform = function (image, matrix, fromWidth, fromHeight, toWidth, toHeight, callback) {
-  console.log(matrix);
   if (!matrix) return callback(image);
 
   var canvas = document.createElement('canvas')
@@ -72,9 +74,14 @@ exports.transform = function (image, matrix, fromWidth, fromHeight, toWidth, toH
     callback(null, transformedImage);
   };
 
+  console.log(image.width);
+  console.log(image.height);
+  console.log(toWidth);
+  console.log(toHeight);
+
   canvas.width = toWidth;
   canvas.height = toHeight;
-  ctx.transform.apply(ctx, transformedMatrix);
-  ctx.drawImage(image, 0, 0);
+  //ctx.transform.apply(ctx, transformedMatrix);
+  ctx.drawImage(image, -200, -200);
   transformedImage.src = canvas.toDataURL('image/png');
 };
