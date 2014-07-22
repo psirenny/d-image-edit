@@ -1,5 +1,4 @@
 var debounce = require('debounce');
-var util = require('./util');
 
 function Component () {};
 
