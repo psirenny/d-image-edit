@@ -22,7 +22,7 @@ Component.prototype.create = function (model, dom) {
   }
 
   model.set('dim.containerWidth', this.container.offsetWidth);
-  model.set('dim.containerHeight', this.container.offsetWidth);
+  model.set('dim.containerHeight', this.container.offsetHeight);
 };
 
 Component.prototype.dragenter = function (e) {
@@ -52,18 +52,17 @@ Component.prototype.edit = function () {
   var from = model.get('from.image');
   var fromWidth = model.get('dim.fromWidth');
   var fromHeight = model.get('dim.fromHeight');
+  var maxScaleX = model.get('dim.maxScaleX');
   var maxScale = model.get('dim.maxScale');
   var matrix = model.get('dim.matrix');
   var ratioX = model.get('dim.ratioX');
   var ratioY = model.get('dim.ratioY');
   var offsetX = .5 * boundWidth * (matrix[0] - 1);
-  var offsetY = .5 * boundHeight * (matrix[3] - 1);
-  var originX = offsetX * Math.max(1, fromWidth / fromHeight);
-  var originY = offsetY * Math.max(1, fromHeight / fromWidth);
-  var translateX = ratioX * (matrix[4] - originX);
-  var translateY = ratioY * (matrix[5] - originY);
-  var scaleX = matrix[0] / maxScale;
-  var scaleY = matrix[3] / maxScale;
+  var offsetY = offsetX * fromHeight / fromWidth;
+  var translateX = ratioX * (matrix[4] - offsetX);
+  var translateY = ratioY * (matrix[5] - offsetY);
+  var scaleX = matrix[0] / maxScaleX;
+  var scaleY = matrix[3] / maxScaleX;
   var to = new Image();
   var toWidth = model.get('dim.toWidth');
   var toHeight = model.get('dim.toHeight');
