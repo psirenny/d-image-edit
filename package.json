@@ -4,8 +4,7 @@
     "url": "https://github.com/psirenny/d-image-upload/issues"
   },
   "dependencies": {
-    "debounce": "^1.0.0",
-    "lodash": "^2.4.1"
+    "debounce": "^1.0.0"
   },
   "description": "A Derby JS component for uploading images.",
   "keywords": [
