@@ -11,6 +11,8 @@ Component.prototype.clear = function () {
 };
 
 Component.prototype.create = function (model, dom) {
+  var self = this;
+
   if (this.dropzone) {
     dom.addListener('dragenter', this.dropzone, this.dragenter.bind(this));
     dom.addListener('dragover', this.dropzone, this.dragover.bind(this));
@@ -21,8 +23,43 @@ Component.prototype.create = function (model, dom) {
     dom.addListener('change', this.input, this.change.bind(this));
   }
 
-  model.set('dim.containerWidth', this.container.offsetWidth);
-  model.set('dim.containerHeight', this.container.offsetHeight);
+  model.set('_containerWidth', this.container.offsetWidth);
+  model.set('_containerHeight', this.container.offsetHeight);
+
+  // load a new image when data changes
+  var load = this.load.bind(this);
+  model.on('change', 'from.data', load);
+
+  // draw the image to match the user's zoom/pan preference
+  var wait = model.setNull('debounce', 100);
+  var draw = debounce(this.draw, wait).bind(this);
+  model.on('change', 'from.image', draw);
+  model.on('change', 'to.width', draw);
+  model.on('change', 'to.height', draw);
+  model.on('change', '_matrix', draw);
+
+  // run the panzoom jquery script
+  var panzoom = this.panzoom.bind(this);
+  model.on('change', 'from.image', panzoom);
+  model.on('change', '_maxScale', panzoom);
+
+  var opts = [
+    'contain',
+    'cursor',
+    'disablePan',
+    'disableZoom',
+    'duration',
+    'easing',
+    'increment',
+    'rangeStep',
+    'transition'
+  ];
+
+  opts.forEach(function (opt) {
+    model.on('change', opt, function (val) {
+      $(self.image).panzoom('option', opt, val);
+    });
+  });
 };
 
 Component.prototype.dragenter = function (e) {
@@ -43,29 +80,20 @@ Component.prototype.drop = function (e) {
   this.selectImage(file || data);
 };
 
-Component.prototype.edit = function () {
+Component.prototype.draw = function () {
   var model = this.model;
-  var boundWidth = model.get('dim.boundWidth');
-  var boundHeight = model.get('dim.boundHeight');
   var canvas = document.createElement('canvas');
   var ctx = canvas.getContext('2d');
   var from = model.get('from.image');
-  var fromWidth = model.get('dim.fromWidth');
-  var fromHeight = model.get('dim.fromHeight');
-  var maxScaleX = model.get('dim.maxScaleX');
-  var maxScale = model.get('dim.maxScale');
-  var matrix = model.get('dim.matrix');
-  var ratioX = model.get('dim.ratioX');
-  var ratioY = model.get('dim.ratioY');
-  var offsetX = .5 * boundWidth * (matrix[0] - 1);
-  var offsetY = offsetX * fromHeight / fromWidth;
-  var translateX = ratioX * (matrix[4] - offsetX);
-  var translateY = ratioY * (matrix[5] - offsetY);
+  var maxScaleX = model.get('_maxScaleX');
+  var matrix = model.get('_matrix');
+  var offsetX = .5 * model.get('_containerWidth') * (matrix[0] - 1);
+  var offsetY = offsetX * model.get('from.height') / model.get('from.width');
+  var translateX = model.get('_ratioX') * (matrix[4] - offsetX);
+  var translateY = model.get('_ratioY') * (matrix[5] - offsetY);
   var scaleX = matrix[0] / maxScaleX;
   var scaleY = matrix[3] / maxScaleX;
   var to = new Image();
-  var toWidth = model.get('dim.toWidth');
-  var toHeight = model.get('dim.toHeight');
   var toMatrix = [scaleX, 0, 0, scaleY, translateX, translateY];
 
   if (!from) {
@@ -76,101 +104,145 @@ Component.prototype.edit = function () {
     model.set('to.image', to);
   };
 
-  canvas.width = toWidth;
-  canvas.height = toHeight;
+  canvas.width = model.get('to.width');
+  canvas.height = model.get('to.height');
   ctx.transform.apply(ctx, toMatrix);
   ctx.drawImage(from, 0, 0);
-  to.src = canvas.toDataURL('image/png');
+  to.src = canvas.toDataURL(model.get('_mimetype'));
 };
 
 Component.prototype.init = function (model) {
-  var div = function (a, b, c) { return a / b / (c || 1); };
-  var edit = debounce(this.edit, 100).bind(this);
-  var gt = function (a, b) { return a > b; };
-  var load = this.load.bind(this);
-  var or = function (a, b, c) { return a || b || c };
-  var offset = function (scale, dim) { return -scale * dim; };
-  var matrix = function (scale, offsetX, offsetY) { return [scale, 0, 0, scale, offsetX, offsetY]; };
-  var panzoom = debounce(this.panzoom, 100).bind(this);
-  model.set('dim.matrix', [1, 0, 0, 1, 0, 0]);
-  model.start('dim.boundWidth', 'containerWidth', 'containerSize', 'dim.containerWidth', or);
-  model.start('dim.boundHeight', 'containerHeight', 'containerSize', 'dim.containerHeight', or);
-  model.start('dim.canScale', 'dim.maxScale', 'dim.minScale', gt);
-  model.start('dim.fromWidth', 'dim.boundWidth', 'from.image.width', Math.max);
-  model.start('dim.fromHeight', 'dim.boundHeight', 'from.image.height', Math.max);
-  model.start('dim.toWidth', 'size', 'width', or);
-  model.start('dim.toHeight', 'size', 'height', or);
-  model.start('dim.ratioX', 'dim.toWidth', 'dim.boundWidth', div);
-  model.start('dim.ratioY', 'dim.toHeight', 'dim.boundHeight', div);
-  model.start('dim.ratio', 'dim.ratioX', 'dim.ratioY', Math.max);
-  model.start('dim.maxScaleX', 'dim.fromWidth', 'dim.boundWidth', 'dim.ratioX', div);
-  model.start('dim.maxScaleY', 'dim.fromHeight', 'dim.boundHeight', 'dim.ratioY', div);
-  model.start('dim.maxScale', 'dim.maxScaleX', 'dim.maxScaleY', Math.min);
-  model.start('dim.offsetX', 'dim.maxScale', 'dim.toWidth', offset);
-  model.start('dim.offsetY', 'dim.maxScale', 'dim.toHeight', offset);
-  model.on('change', 'from.data', load);
-  model.on('change', 'dim.boundWidth', edit);
-  model.on('change', 'dim.boundHeight', edit);
-  model.on('change', 'dim.toWidth', edit);
-  model.on('change', 'dim.toHeight', edit);
-  model.on('change', 'dim.matrix', edit);
-  model.on('change', 'from.image', edit);
-  model.on('change', 'dim.maxScale', panzoom);
-  model.on('change', 'dim.minScale', panzoom);
-  model.on('change', 'from.image', panzoom);
+  // set the default panzoom transformation matrix
+  model.set('_matrix', [1, 0, 0, 1, 0, 0]);
+
+  // ensure the image width is at least as wide as the container
+  model.start('from.width', '_containerWidth', 'from.image.width', Math.max);
+
+  // ensure the image height is at least as tall as the container
+  model.start('from.height', '_containerHeight', 'from.image.height', Math.max);
+
+  // set the image width to the specified width or size
+  // default to the container width
+  model.start('to.width', 'size', 'width', '_containerWidth',
+    function (imageSize, imageWidth, containerWidth) {
+      return imageWidth || imageSize || containerWidth;
+    }
+  );
+
+  // set the image width to the specified height or size
+  // default to the container height
+  model.start('to.height', 'size', 'height', '_containerHeight',
+    function (imageSize, imageHeight, containerHeight) {
+      return imageHeight || imageSize || containerHeight;
+    }
+  );
+
+  // how much wider the image is relative to the container width
+  model.start('_ratioX', 'to.width', '_containerWidth',
+    function (imageWidth, containerWidth) {
+      return imageWidth / containerWidth;
+    }
+  );
+
+  // how much taller the image is relative to the container height
+  model.start('_ratioY', 'to.height', '_containerHeight',
+    function (imageHeight, containerHeight) {
+      return imageHeight / containerHeight;
+    }
+  );
+
+  // the number of times you can scale the container horizontally
+  // such that the image will be zoomed in completely
+  model.start('_maxScaleX', 'from.width', '_containerWidth', '_ratioX',
+    function (imageWidth, containerWidth, ratioX) {
+      return imageWidth / containerWidth / ratioX;
+    }
+  );
+
+  // the number of times you can scale the container vertically
+  // such that the image will be zoomed in completely
+  model.start('_maxScaleY', 'from.height', '_containerHeight', '_ratioY',
+    function (imageHeight, containerHeight, ratioY) {
+      return imageHeight / containerHeight / ratioY;
+    }
+  );
+
+  // the maximum amount that panzoom can scale
+  model.start('_maxScale', '_maxScaleX', '_maxScaleY', Math.min);
+
+  // the mimetype of the target image
+  // defaults to the source image file type
+  model.start('_mimetype', 'fileType', 'from.data.type',
+    function (fileType, imageType) {
+      return fileType ? ('image/' + fileType) : imageType;
+    }
+  );
+
+  // whether or not panzoom can scale
+  // may be used to determine whether or not to show zoom in, zoom out, etc.
+  model.start('canScale', '_maxScale', 'minScale', Math.max);
 };
 
 Component.prototype.load = function () {
   var self = this;
   var model = this.model;
   var data = model.get('from.data');
-  var image = new Image();
+  var img = new Image();
   var reader = new FileReader();
 
   if (!data) {
-    self.image.src = '';
+    this.image.src = '';
     return model.del('from.image');
   }
 
-  image.onload = function (e) {
-    model.set('from.image', image);
+  img.onload = function (e) {
+    model.set('from.image', img);
   };
 
   if (typeof data === 'string') {
-    return image.src = data;
+    return img.src = data;
   }
 
   reader.onload = function (e) {
-    image.src = e.target.result;
+    img.src = e.target.result;
   };
 
   reader.readAsDataURL(data);
 }
 
+Component.prototype.option = function (name, value) {
+  $(this.image).panzoom('option', name, value);
+};
+
 Component.prototype.panzoom = function () {
   var self = this;
   var model = this.model;
-  var contain = model.get('contain') || 'invert';
-  var image = model.get('from.image');
-  var maxScale = model.get('dim.maxScale');
-  if (!image) return;
+  var img = model.get('from.image');
+  if (!img) return;
 
   function onChange(e, ctx, matrix) {
-    model.set('dim.matrix', matrix);
+    model.set('_matrix', matrix);
   }
 
   this.image.onload = function () {
     $(self.image).panzoom({
       contain: model.get('contain'),
+      cursor: model.get('cursor'),
+      disablePan: model.get('disablePan'),
+      disableZoom: model.get('disableZoom'),
+      duration: model.get('duration'),
       easing: model.get('easing'),
-      maxScale: maxScale,
+      increment: model.get('increment'),
+      maxScale: model.get('_maxScale'),
       minScale: 1,
       onChange: onChange,
+      rangeStep: model.get('rangeStep'),
+      transition: model.get('transition') !== 'false',
       $zoomRange: $(self.range)
     });
   };
 
-  this.image.src = image.src;
+  this.image.src = img.src;
 };
 
 Component.prototype.reset = function (options) {
