@@ -5,17 +5,89 @@ function Component () {};
 
 Component.prototype = Object.create(Panzoom.prototype);
 
-Component.prototype.change = function (e) {
-  this.selectImage(e.target.files[0]);
-};
+Component.prototype.init = function (model, dom) {
+  // set the default panzoom transformation matrix
+  model.set('_matrix', [1, 0, 0, 1, 0, 0]);
 
-Component.prototype.clear = function () {
-  this.model.del('from.data');
+  // default min scale to the full image
+  model.setNull('minScale', 1);
+
+  // ensure the image width is at least as wide as the container
+  model.start('from.width', '_containerWidth', 'from.image.width', Math.max);
+
+  // ensure the image height is at least as tall as the container
+  model.start('from.height', '_containerHeight', 'from.image.height', Math.max);
+
+  // set the image width to the specified width or size
+  // default to the container width
+  model.start('to.width', 'size', 'width', '_containerWidth',
+    function (imageSize, imageWidth, containerWidth) {
+      return imageWidth || imageSize || containerWidth;
+    }
+  );
+
+  // set the image width to the specified height or size
+  // default to the container height
+  model.start('to.height', 'size', 'height', '_containerHeight',
+    function (imageSize, imageHeight, containerHeight) {
+      return imageHeight || imageSize || containerHeight;
+    }
+  );
+
+  // how much wider the image is relative to the container width
+  model.start('_ratioX', 'to.width', '_containerWidth',
+    function (imageWidth, containerWidth) {
+      return imageWidth / containerWidth;
+    }
+  );
+
+  // how much taller the image is relative to the container height
+  model.start('_ratioY', 'to.height', '_containerHeight',
+    function (imageHeight, containerHeight) {
+      return imageHeight / containerHeight;
+    }
+  );
+
+  // the number of times you can scale the container horizontally
+  // such that the image will be zoomed in completely
+  model.start('_maxScaleX', 'from.width', '_containerWidth', '_ratioX',
+    function (imageWidth, containerWidth, ratioX) {
+      return imageWidth / containerWidth / ratioX;
+    }
+  );
+
+  // the number of times you can scale the container vertically
+  // such that the image will be zoomed in completely
+  model.start('_maxScaleY', 'from.height', '_containerHeight', '_ratioY',
+    function (imageHeight, containerHeight, ratioY) {
+      return imageHeight / containerHeight / ratioY;
+    }
+  );
+
+  // the maximum amount that panzoom can scale
+  model.start('_maxScale', '_maxScaleX', '_maxScaleY', Math.min);
+
+  // the mimetype of the target image
+  // defaults to the source image file type
+  model.start('_mimetype', 'fileType', 'from.data.type',
+    function (fileType, imageType) {
+      return fileType ? ('image/' + fileType) : imageType;
+    }
+  );
+
+  this.on('change', function (matrix) {
+    console.log('change!');
+    model.set('_matrix', matrix);
+  });
+
+  // whether or not panzoom can scale
+  // may be used to determine whether or not to show zoom in, zoom out, etc.
+  model.start('canScale', '_maxScale', 'minScale', Math.max);
+
+  Panzoom.prototype.init.call(this, model, dom);
 };
 
 Component.prototype.create = function (model, dom) {
-  Panzoom.prototype.create.call(this, model, dom);
-
   var self = this;
 
   if (this.dropzone) {
@@ -46,6 +118,16 @@ Component.prototype.create = function (model, dom) {
   var edit = this.edit.bind(this);
   model.on('change', 'from.image', edit);
   model.on('change', '_maxScale', edit);
+
+  Panzoom.prototype.create.call(this, model, dom);
+};
+
+Component.prototype.change = function (e) {
+  this.selectImage(e.target.files[0]);
+};
+
+Component.prototype.clear = function () {
+  this.model.del('from.data');
 };
 
 Component.prototype.dragenter = function (e) {
@@ -112,84 +194,6 @@ Component.prototype.edit = function () {
   };
 
   this.image.src = img.src;
-};
-
-Component.prototype.init = function (model, dom) {
-  Panzoom.prototype.init.call(this, model, dom);
-
-  // set the default panzoom transformation matrix
-  model.set('_matrix', [1, 0, 0, 1, 0, 0]);
-
-  // ensure the image width is at least as wide as the container
-  model.start('from.width', '_containerWidth', 'from.image.width', Math.max);
-
-  // ensure the image height is at least as tall as the container
-  model.start('from.height', '_containerHeight', 'from.image.height', Math.max);
-
-  // set the image width to the specified width or size
-  // default to the container width
-  model.start('to.width', 'size', 'width', '_containerWidth',
-    function (imageSize, imageWidth, containerWidth) {
-      return imageWidth || imageSize || containerWidth;
-    }
-  );
-
-  // set the image width to the specified height or size
-  // default to the container height
-  model.start('to.height', 'size', 'height', '_containerHeight',
-    function (imageSize, imageHeight, containerHeight) {
-      return imageHeight || imageSize || containerHeight;
-    }
-  );
-
-  // how much wider the image is relative to the container width
-  model.start('_ratioX', 'to.width', '_containerWidth',
-    function (imageWidth, containerWidth) {
-      return imageWidth / containerWidth;
-    }
-  );
-
-  // how much taller the image is relative to the container height
-  model.start('_ratioY', 'to.height', '_containerHeight',
-    function (imageHeight, containerHeight) {
-      return imageHeight / containerHeight;
-    }
-  );
-
-  // the number of times you can scale the container horizontally
-  // such that the image will be zoomed in completely
-  model.start('_maxScaleX', 'from.width', '_containerWidth', '_ratioX',
-    function (imageWidth, containerWidth, ratioX) {
-      return imageWidth / containerWidth / ratioX;
-    }
-  );
-
-  // the number of times you can scale the container vertically
-  // such that the image will be zoomed in completely
-  model.start('_maxScaleY', 'from.height', '_containerHeight', '_ratioY',
-    function (imageHeight, containerHeight, ratioY) {
-      return imageHeight / containerHeight / ratioY;
-    }
-  );
-
-  // the maximum amount that panzoom can scale
-  model.start('_maxScale', '_maxScaleX', '_maxScaleY', Math.min);
-
-  // the mimetype of the target image
-  // defaults to the source image file type
-  model.start('_mimetype', 'fileType', 'from.data.type',
-    function (fileType, imageType) {
-      return fileType ? ('image/' + fileType) : imageType;
-    }
-  );
-
-  this.on('change', function (matrix) {
-    model.set('_matrix', matrix);
-  });
-
-  // whether or not panzoom can scale
-  // may be used to determine whether or not to show zoom in, zoom out, etc.
-  model.start('canScale', '_maxScale', 'minScale', Math.max);
 };
 
 Component.prototype.load = function () {

@@ -4,7 +4,7 @@
     "url": "https://github.com/psirenny/d-image-upload/issues"
   },
   "dependencies": {
-    "d-panzoom": "^0.1.0",
+    "d-panzoom": "^0.1.1",
     "debounce": "^1.0.0"
   },
   "description": "A Derby JS component for uploading images.",
