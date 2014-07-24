@@ -149,6 +149,7 @@ Component.prototype.drop = function (e) {
 };
 
 Component.prototype.draw = function () {
+  var self = this;
   var model = this.model;
   var canvas = document.createElement('canvas');
   var ctx = canvas.getContext('2d');
@@ -170,6 +171,7 @@ Component.prototype.draw = function () {
 
   to.onload = function () {
     model.set('to.image', to);
+    self.emit('draw', to);
   };
 
   canvas.width = model.get('to.width');
