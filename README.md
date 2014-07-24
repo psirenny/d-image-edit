@@ -60,11 +60,11 @@ Use the view:
 Elements
 --------
 
-**container** - **Required.** The element containing the image. The container size must have the same aspect ratio as the final image. It can be smaller in size without sacraficing image quality.
+**container (Required)** - The element containing the image. The container size must have the same aspect ratio as the final image. It can be smaller in size without sacraficing image quality.
 
 **dropzone** - The region that an image can be dragged and dropped onto.
 
-**image** - **Required.** The `<img>` element that should contain the image source.
+**image (Required)** - The `<img>` element that should contain the image source.
 
 **input** - The `<input type="file">` element that can select a new image.
 
