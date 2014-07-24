@@ -38,11 +38,9 @@ Create a view:
         <div as="container">
           <img alt="" as="image" src="{{@src}}">
         </div>
-        <!-- select an image -->
         <input type="file" as="input">
         <!-- must use hidden/visible classes rather than {{if}} blocks -->
         <div class="{{if !from.image}}hidden{{/if}}">
-          <!-- zoom in or out of the image -->
           <input type="range" as="range">
         </div>
       </div>
@@ -62,7 +60,7 @@ Use the view:
 Elements
 --------
 
-**container** - The element containing the image. The container size must have the same aspect ratio of the final image. It may be smaller than the final image withut sacraficing image quality in the final image.
+**container** - The element containing the image. The container size must have the same aspect ratio as the final image. It can be smaller in size without sacraficing image quality.
 
 **dropzone** - The region that an image can be dragged and dropped onto.
 
@@ -81,24 +79,31 @@ Options
 
 **size** - The width and height of the final image.
 
-**width** - The width of the final image.
+**width** - The width of the final image. Overrides **size**.
 
-**height** - The height of the final image.
+**height** - The height of the final image. Overrides **size**.
 
 Functions
 ---------
 
-**clear** - Clear all image data.
+**clear()** - Clear all image data.
 
-**dragenter** - Use if you have multiple dropzones that must implement the dragenter event.
+**dragenter($event)** - Use if you have multiple dropzones that must implement the dragenter event.
 
-**dragover** - Use if you have multiple dropzones that must implement the dragover event.
+**dragover($event)** - Use if you have multiple dropzones that must implement the dragover event.
 
-**drop** - Use if you have multiple dropzones that must implement the drag event.
+**drop($event)** - Use if you have multiple dropzones that must implement the drag event.
 
 Events
 ------
 
-**draw** - Event emitted after a new image is drawn based on changes by panning or zooming.
+**draw(image)** - Event emitted after a new image is drawn based on changes by panning or zooming.
 
 There are more options, events and functions. See [Derby Panzoom](http://derbyjs.com).
+
+Notes
+-----
+
+Be careful about wrapping special elements such as `input` and `range` in {{if}} blocks.
+If the {{if}} block evaluates to false then the server will not render the initial element and it won't be found by the component.
+Instead use `hidden` or `visible` classes to toggle visibility.
