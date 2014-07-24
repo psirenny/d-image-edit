@@ -7,9 +7,9 @@ It uses [Derby Panzoom](http://derbyjs.com) to edit images.
 Features
 --------
 
-* Drag and drop images
-* Resize and crop images by panning and zooming
-* Display your image in a container smaller than the final image size
+* Drag and drop images.
+* Resize and crop images by panning and zooming.
+* Display your image in a container smaller than the final image size.
 * All of the features in jQuery Panzoom (transitions, etc.)
 
 This component does not upload the final image to your server.
