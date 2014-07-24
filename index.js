@@ -1,6 +1,9 @@
 var debounce = require('debounce');
+var Panzoom = require('d-panzoom');
 
 function Component () {};
+
+Component.prototype = Object.create(Panzoom.prototype);
 
 Component.prototype.change = function (e) {
   this.selectImage(e.target.files[0]);
@@ -11,6 +14,8 @@ Component.prototype.clear = function () {
 };
 
 Component.prototype.create = function (model, dom) {
+  Panzoom.prototype.create.call(this, model, dom);
+
   var self = this;
 
   if (this.dropzone) {
@@ -38,28 +43,9 @@ Component.prototype.create = function (model, dom) {
   model.on('change', 'to.height', draw);
   model.on('change', '_matrix', draw);
 
-  // run the panzoom jquery script
-  var panzoom = this.panzoom.bind(this);
-  model.on('change', 'from.image', panzoom);
-  model.on('change', '_maxScale', panzoom);
-
-  var opts = [
-    'contain',
-    'cursor',
-    'disablePan',
-    'disableZoom',
-    'duration',
-    'easing',
-    'increment',
-    'rangeStep',
-    'transition'
-  ];
-
-  opts.forEach(function (opt) {
-    model.on('change', opt, function (val) {
-      $(self.image).panzoom('option', opt, val);
-    });
-  });
+  var edit = this.edit.bind(this);
+  model.on('change', 'from.image', edit);
+  model.on('change', '_maxScale', edit);
 };
 
 Component.prototype.dragenter = function (e) {
@@ -111,7 +97,26 @@ Component.prototype.draw = function () {
   to.src = canvas.toDataURL(model.get('_mimetype'));
 };
 
-Component.prototype.init = function (model) {
+Component.prototype.edit = function () {
+  var self = this;
+  var model = this.model;
+  var img = model.get('from.image');
+  if (!img) return;
+
+  function onChange(e, ctx, matrix) {
+    model.set('_matrix', matrix);
+  }
+
+  this.image.onload = function () {
+    self.panzoom();
+  };
+
+  this.image.src = img.src;
+};
+
+Component.prototype.init = function (model, dom) {
+  Panzoom.prototype.init.call(this, model, dom);
+
   // set the default panzoom transformation matrix
   model.set('_matrix', [1, 0, 0, 1, 0, 0]);
 
@@ -178,6 +183,10 @@ Component.prototype.init = function (model) {
     }
   );
 
+  this.on('change', function (matrix) {
+    model.set('_matrix', matrix);
+  });
+
   // whether or not panzoom can scale
   // may be used to determine whether or not to show zoom in, zoom out, etc.
   model.start('canScale', '_maxScale', 'minScale', Math.max);
@@ -210,67 +219,8 @@ Component.prototype.load = function () {
   reader.readAsDataURL(data);
 }
 
-Component.prototype.option = function (name, value) {
-  $(this.image).panzoom('option', name, value);
-};
-
-Component.prototype.panzoom = function () {
-  var self = this;
-  var model = this.model;
-  var img = model.get('from.image');
-  if (!img) return;
-
-  function onChange(e, ctx, matrix) {
-    model.set('_matrix', matrix);
-  }
-
-  this.image.onload = function () {
-    $(self.image).panzoom({
-      contain: model.get('contain'),
-      cursor: model.get('cursor'),
-      disablePan: model.get('disablePan'),
-      disableZoom: model.get('disableZoom'),
-      duration: model.get('duration'),
-      easing: model.get('easing'),
-      increment: model.get('increment'),
-      maxScale: model.get('_maxScale'),
-      minScale: 1,
-      onChange: onChange,
-      rangeStep: model.get('rangeStep'),
-      transition: model.get('transition') !== 'false',
-      $zoomRange: $(self.range)
-    });
-  };
-
-  this.image.src = img.src;
-};
-
-Component.prototype.reset = function (options) {
-  $(this.image).panzoom('reset', options);
-};
-
-Component.prototype.resetPan = function (options) {
-  $(this.image).panzoom('resetPan', options);
-};
-
-Component.prototype.resetZoom = function (options) {
-  $(this.image).panzoom('resetZoom', options);
-};
-
 Component.prototype.selectImage = function (data) {
   this.model.set('from.data', data);
-};
-
-Component.prototype.zoom = function (scale, opts) {
-  $(this.image).panzoom('zoom', scale, opts);
-};
-
-Component.prototype.zoomIn = function () {
-  $(this.image).panzoom('zoom');
-};
-
-Component.prototype.zoomOut = function () {
-  $(this.image).panzoom('zoom', true);
 };
 
 module.exports = Component;
