@@ -79,7 +79,7 @@ The following path data is available to the view implementing the component:
 
 **from.data** - The data used to load the image. (File, url, etc.)
 
-**from.image** - The image data used to draw the final image.
+**from.image** - The image used to draw the final image.
 
 **to.image** - The final image.
 
