@@ -70,6 +70,19 @@ Elements
 
 **range** - The `<input type="range">` element that can zoom in and out.
 
+Data
+----
+
+The following path data is available to the view implementing the component:
+
+*canScale* - True if the computed max scale is greater than the min scale. Use this to conditionally display zoom in and zoom out controls.
+
+*from.data* - The data used to load the image. (File, url, etc.)
+
+*from.image* - The image data used to draw the final image.
+
+*to.image* - The final image.
+
 Options
 -------
 
@@ -98,6 +111,9 @@ Events
 ------
 
 **draw(image)** - Event emitted after a new image is drawn based on changes by panning or zooming.
+
+Other
+-----
 
 There are more options, events and functions. See [Derby Panzoom](http://derbyjs.com).
 
