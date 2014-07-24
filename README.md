@@ -40,7 +40,7 @@ Create a view:
         </div>
         <input type="file" as="input">
         <!-- must use hidden/visible classes rather than {{if}} blocks -->
-        <div class="{{if !from.image}}hidden{{/if}}">
+        <div class="{{if !canScale}}hidden{{/if}}">
           <input type="range" as="range">
         </div>
       </div>
@@ -75,13 +75,13 @@ Data
 
 The following path data is available to the view implementing the component:
 
-*canScale* - True if the computed max scale is greater than the min scale. Use this to conditionally display zoom in and zoom out controls.
+**canScale** - True if the computed max scale is greater than the min scale. Use this to conditionally display zoom in and zoom out controls.
 
-*from.data* - The data used to load the image. (File, url, etc.)
+**from.data** - The data used to load the image. (File, url, etc.)
 
-*from.image* - The image data used to draw the final image.
+**from.image** - The image data used to draw the final image.
 
-*to.image* - The final image.
+**to.image** - The final image.
 
 Options
 -------
