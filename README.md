@@ -122,4 +122,4 @@ Notes
 
 Be careful about wrapping special elements such as `input` and `range` in `{{if}}` blocks.
 If the `{{if}}` block evaluates to false then the server will not render the initial element and it won't be found by the component.
-Instead use `hidden` or `visible` classes to toggle visibility.
+Use `hidden` or `visible` classes to toggle visibility instead.
