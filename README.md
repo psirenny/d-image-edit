@@ -2,7 +2,7 @@ Derby Image Upload
 ==================
 
 A [Derby JS](http://derbyjs.com) component to upload and edit images.
-It uses [Derby Panzoom](http://derbyjs.com) to edit images.
+It uses [Derby Panzoom](https://github.com/psirenny/d-panzoom) to edit images.
 
 Features
 --------
