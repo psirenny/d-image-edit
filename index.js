@@ -76,7 +76,6 @@ Component.prototype.init = function (model, dom) {
   );
 
   this.on('change', function (matrix) {
-    console.log('change!');
     model.set('_matrix', matrix);
   });
 
