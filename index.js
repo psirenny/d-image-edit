@@ -50,22 +50,11 @@ Component.prototype.init = function (model, dom) {
 
   // the number of times you can scale the container horizontally
   // such that the image will be zoomed in completely
-  model.start('_maxScaleX', 'from.width', '_containerWidth', '_ratioX',
+  model.start('_maxScale', 'from.width', '_containerWidth', '_ratioX',
     function (imageWidth, containerWidth, ratioX) {
       return imageWidth / containerWidth / ratioX;
     }
   );
-
-  // the number of times you can scale the container vertically
-  // such that the image will be zoomed in completely
-  model.start('_maxScaleY', 'from.height', '_containerHeight', '_ratioY',
-    function (imageHeight, containerHeight, ratioY) {
-      return imageHeight / containerHeight / ratioY;
-    }
-  );
-
-  // the maximum amount that panzoom can scale
-  model.start('_maxScale', '_maxScaleX', '_maxScaleY', Math.min);
 
   // the mimetype of the target image
   // defaults to the source image file type
@@ -153,14 +142,14 @@ Component.prototype.draw = function () {
   var canvas = document.createElement('canvas');
   var ctx = canvas.getContext('2d');
   var from = model.get('from.image');
-  var maxScaleX = model.get('_maxScaleX');
+  var maxScale = model.get('_maxScale');
   var matrix = model.get('_matrix');
   var offsetX = .5 * model.get('_containerWidth') * (matrix[0] - 1);
   var offsetY = offsetX * model.get('from.height') / model.get('from.width');
   var translateX = model.get('_ratioX') * (matrix[4] - offsetX);
   var translateY = model.get('_ratioY') * (matrix[5] - offsetY);
-  var scaleX = matrix[0] / maxScaleX;
-  var scaleY = matrix[3] / maxScaleX;
+  var scaleX = matrix[0] / maxScale;
+  var scaleY = matrix[3] / maxScale;
   var to = new Image();
   var toMatrix = [scaleX, 0, 0, scaleY, translateX, translateY];
 

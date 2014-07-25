@@ -55,7 +55,7 @@ Use the view:
       <script src="jquery.panzoom.js">
 
     <Body:>
-      <photo contain="invert" draw="doSomething()" src="..."></photo>
+      <photo contain="invert" on-draw="doSomething()" src="..."></photo>
 
 Elements
 --------
