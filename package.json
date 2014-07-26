@@ -1,7 +1,7 @@
 {
   "author": "Dennis Torres <djtorres0@gmail.com>",
   "bugs": {
-    "url": "https://github.com/psirenny/d-image-upload/issues"
+    "url": "https://github.com/psirenny/d-image-edit/issues"
   },
   "dependencies": {
     "d-panzoom": "^0.1.1",
@@ -11,20 +11,20 @@
   "keywords": [
     "derby",
     "image",
+    "edit",
     "photo",
-    "picture",
-    "upload"
+    "picture"
   ],
   "license": "MIT",
   "main": "index.js",
-  "name": "d-image-upload",
+  "name": "d-image-edit",
   "readmeFilename": "README.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/psirenny/d-image-upload.git"
+    "url": "https://github.com/psirenny/d-image-edit.git"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "0.3.0"
+  "version": "0.4.0"
 }

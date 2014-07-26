@@ -78,16 +78,6 @@ Component.prototype.init = function (model, dom) {
 Component.prototype.create = function (model, dom) {
   var self = this;
 
-  if (this.dropzone) {
-    dom.addListener('dragenter', this.dropzone, this.dragenter.bind(this));
-    dom.addListener('dragover', this.dropzone, this.dragover.bind(this));
-    dom.addListener('drop', this.dropzone, this.drop.bind(this));
-  }
-
-  if (this.input) {
-    dom.addListener('change', this.input, this.change.bind(this));
-  }
-
   model.set('_containerWidth', this.container.offsetWidth);
   model.set('_containerHeight', this.container.offsetHeight);
 
@@ -110,30 +100,8 @@ Component.prototype.create = function (model, dom) {
   Panzoom.prototype.create.call(this, model, dom);
 };
 
-Component.prototype.change = function (e) {
-  this.selectImage(e.target.files[0]);
-};
-
 Component.prototype.clear = function () {
   this.model.del('from.data');
-};
-
-Component.prototype.dragenter = function (e) {
-  e.stopPropagation();
-  e.preventDefault();
-};
-
-Component.prototype.dragover = function (e) {
-  e.stopPropagation();
-  e.preventDefault();
-};
-
-Component.prototype.drop = function (e) {
-  e.stopPropagation();
-  e.preventDefault();
-  var data = e.dataTransfer.getData('text');
-  var file = e.dataTransfer.files[0];
-  this.selectImage(file || data);
 };
 
 Component.prototype.draw = function () {
@@ -186,35 +154,34 @@ Component.prototype.edit = function () {
   this.image.src = img.src;
 };
 
-Component.prototype.load = function () {
+Component.prototype.load = function (file) {
   var self = this;
   var model = this.model;
-  var data = model.get('from.data');
   var img = new Image();
   var reader = new FileReader();
 
-  if (!data) {
+  if (!file) {
     this.image.src = '';
     return model.del('from.image');
+  }
+
+  if (file[0]) {
+    file = file[0];
   }
 
   img.onload = function (e) {
     model.set('from.image', img);
   };
 
-  if (typeof data === 'string') {
-    return img.src = data;
+  if (typeof file === 'string') {
+    return img.src = file;
   }
 
   reader.onload = function (e) {
     img.src = e.target.result;
   };
 
-  reader.readAsDataURL(data);
+  reader.readAsDataURL(file);
 }
-
-Component.prototype.selectImage = function (data) {
-  this.model.set('from.data', data);
-};
 
 module.exports = Component;

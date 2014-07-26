@@ -1,24 +1,20 @@
-Derby Image Upload
-==================
+Derby Image Edit
+================
 
-A [Derby JS](http://derbyjs.com) component to upload and edit images.
+A [Derby JS](http://derbyjs.com) component to edit images.
 It uses [Derby Panzoom](https://github.com/psirenny/d-panzoom) to edit images.
 
 Features
 --------
 
-* Drag and drop images.
 * Resize and crop images by panning and zooming.
 * Display your image in a container smaller than the final image size.
 * All of the features in jQuery Panzoom (transitions, etc.)
 
-This component does not upload the final image to your server.
-Try using [derby-upload](https://github.com/lever/derby-upload) instead.
-
 Installation
 ------------
 
-    $ npm install d-image-upload --save
+    $ npm install d-image-edit --save
 
 Dependencies
 ------------
@@ -47,7 +43,7 @@ Create a view:
 
 Associate the view with the component:
 
-    app.use('photo', require('d-image-upload'));
+    app.use('photo', require('d-image-edit'));
 
 Use the view:
 
@@ -55,7 +51,7 @@ Use the view:
       <script src="jquery.panzoom.js">
 
     <Body:>
-      <photo contain="invert" on-draw="doSomething()" src="..."></photo>
+      <photo contain="invert" on-draw="save()" src="..."></photo>
 
 Elements
 --------
@@ -88,7 +84,7 @@ Options
 
 **debounce** - The wait time before a re-draw occurs after a change.
 
-**fileType** - The file type to draw the image as. By default it will use the same file type as the uploaded image.
+**fileType** - The file type to draw the image as. By default it will use the same file type as the original image.
 
 **size** - The width and height of the final image.
 
