@@ -27,23 +27,20 @@ Usage
 
 Create a view:
 
-    <photo: element="photo">
-      <!-- drag images onto the dropzone to load them -->
-      <div as="dropzone">
-        <!-- container element for the image -->
-        <div as="container">
-          <img alt="" as="image" src="{{@src}}">
-        </div>
-        <input type="file" as="input">
-        <!-- must use hidden/visible classes rather than {{if}} blocks -->
-        <div class="{{if !canScale}}hidden{{/if}}">
-          <input type="range" as="range">
-        </div>
+    <edit:>
+      <div as="container">
+        <img alt="" as="image" src="{{@src}}">
+      </div>
+      <!-- must use hidden/visible classes rather than {{if}} blocks -->
+      <div class="{{if !canScale}}hidden{{/if}}">
+        <button on-click="zoom(true)" type="button">Zoom out</button>
+        <input type="range" as="range">
+        <button on-click="zoom()" type="button">Zoom in</button>
       </div>
 
 Associate the view with the component:
 
-    app.use('photo', require('d-image-edit'));
+    app.use('edit', require('d-image-edit'));
 
 Use the view:
 
@@ -51,14 +48,10 @@ Use the view:
       <script src="jquery.panzoom.js">
 
     <Body:>
-      <photo contain="invert" on-draw="save()" src="..."></photo>
+      <edit contain="invert" on-draw="save()" src="..."></edit>
 
 Elements
 --------
-
-**container (Required)** - The element containing the image. The container size must have the same aspect ratio as the final image. It can be smaller in size without sacraficing image quality.
-
-**dropzone** - The region that an image can be dragged and dropped onto.
 
 **image (Required)** - The `<img>` element that should contain the image source.
 
@@ -96,12 +89,6 @@ Functions
 ---------
 
 **clear()** - Clear all image data.
-
-**dragenter($event)** - Use if you have multiple dropzones that must implement the dragenter event.
-
-**dragover($event)** - Use if you have multiple dropzones that must implement the dragover event.
-
-**drop($event)** - Use if you have multiple dropzones that must implement the drag event.
 
 Events
 ------
