@@ -1,7 +1,7 @@
 Derby Image Edit
 ================
 
-A [Derby JS](http://derbyjs.com) component to edit images.
+A [Derby JS](http://derbyjs.com) component for editing images.
 It uses [Derby Panzoom](https://github.com/psirenny/d-panzoom) to edit images.
 
 Features

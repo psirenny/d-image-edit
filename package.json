@@ -7,7 +7,7 @@
     "d-panzoom": "^0.1.1",
     "debounce": "^1.0.0"
   },
-  "description": "A Derby JS component for uploading images.",
+  "description": "A Derby JS component for editing images.",
   "keywords": [
     "derby",
     "image",
