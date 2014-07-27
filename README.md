@@ -93,7 +93,11 @@ Functions
 Events
 ------
 
+**clear()** - Event emitted after the image is cleared.
+
 **draw(image)** - Event emitted after a new image is drawn based on changes by panning or zooming.
+
+**load(image)** - Event emitted after the image is loaded.
 
 Other
 -----

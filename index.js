@@ -100,7 +100,6 @@ Component.prototype.change = function () {
 
   this.image.onload = function () {
     self.panzoom();
-    model.del('loading');
   };
 
   this.image.src = img.src;
@@ -108,6 +107,8 @@ Component.prototype.change = function () {
 
 Component.prototype.clear = function () {
   this.model.del('from.image');
+  this.model.del('to.image');
+  this.emit('clear');
 };
 
 Component.prototype.draw = function () {
@@ -145,6 +146,7 @@ Component.prototype.draw = function () {
 };
 
 Component.prototype.load = function (data) {
+  var self = this;
   var img = new Image();
   var model = this.model;
   var reader = new FileReader();
@@ -153,6 +155,8 @@ Component.prototype.load = function (data) {
 
   img.onload = function (e) {
     model.set('from.image', img);
+    model.del('loading');
+    self.emit('load', img);
   };
 
   // currently supports only one image
