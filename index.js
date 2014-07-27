@@ -82,17 +82,31 @@ Component.prototype.create = function (model, dom) {
   model.on('change', 'to.height', draw);
   model.on('change', '_matrix', draw);
 
-  var edit = this.edit.bind(this);
-  model.on('change', 'from.image', edit);
-  model.on('change', '_maxScale', edit);
+  var change = this.change.bind(this);
+  model.on('change', 'from.image', change);
 
   Panzoom.prototype.create.call(this, model, dom);
 };
 
+Component.prototype.change = function () {
+  var self = this;
+  var model = this.model;
+  var img = model.get('from.image');
+
+  if (!img) {
+    this.image.src = '';
+    return this.destroy();
+  }
+
+  this.image.onload = function () {
+    self.panzoom();
+  };
+
+  this.image.src = img.src;
+};
+
 Component.prototype.clear = function () {
-  this.image.src = '';
   this.model.del('from.image');
-  this.destroy();
 };
 
 Component.prototype.draw = function () {
@@ -127,23 +141,6 @@ Component.prototype.draw = function () {
   ctx.transform.apply(ctx, toMatrix);
   ctx.drawImage(from, 0, 0);
   to.src = canvas.toDataURL(mimetype);
-};
-
-Component.prototype.edit = function () {
-  var self = this;
-  var model = this.model;
-  var img = model.get('from.image');
-  if (!img) return;
-
-  function onChange(e, ctx, matrix) {
-    model.set('_matrix', matrix);
-  }
-
-  this.image.onload = function () {
-    self.panzoom();
-  };
-
-  this.image.src = img.src;
 };
 
 Component.prototype.load = function (data) {
