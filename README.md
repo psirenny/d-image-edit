@@ -66,9 +66,9 @@ The following path data is available to the view implementing the component:
 
 **canScale** - True if the computed max scale is greater than the min scale. Use this to conditionally display zoom in and zoom out controls.
 
-**from.data** - The data used to load the image. (File, url, etc.)
-
 **from.image** - The image used to draw the final image.
+
+**loading** - True while the image is loading.
 
 **to.image** - The final image.
 

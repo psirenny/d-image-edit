@@ -100,6 +100,7 @@ Component.prototype.change = function () {
 
   this.image.onload = function () {
     self.panzoom();
+    model.del('loading');
   };
 
   this.image.src = img.src;
@@ -147,6 +148,8 @@ Component.prototype.load = function (data) {
   var img = new Image();
   var model = this.model;
   var reader = new FileReader();
+
+  model.set('loading', true);
 
   img.onload = function (e) {
     model.set('from.image', img);
