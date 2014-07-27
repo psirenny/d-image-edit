@@ -73,10 +73,6 @@ Component.prototype.create = function (model, dom) {
   model.set('_containerWidth', this.container.offsetWidth);
   model.set('_containerHeight', this.container.offsetHeight);
 
-  // load a new image when data changes
-  var load = this.load.bind(this);
-  model.on('change', 'from.data', load);
-
   // draw the image to match the user's zoom/pan preference
   var wait = model.setNull('debounce', 100);
   var draw = debounce(this.draw, wait).bind(this);
@@ -94,7 +90,9 @@ Component.prototype.create = function (model, dom) {
 };
 
 Component.prototype.clear = function () {
-  this.model.del('from.data');
+  this.image.src = '';
+  this.model.del('from.image');
+  this.destroy();
 };
 
 Component.prototype.draw = function () {
@@ -152,11 +150,6 @@ Component.prototype.load = function (data) {
   var img = new Image();
   var model = this.model;
   var reader = new FileReader();
-
-  if (!data) {
-    this.image.src = '';
-    return model.del('from.image');
-  }
 
   img.onload = function (e) {
     model.set('from.image', img);
