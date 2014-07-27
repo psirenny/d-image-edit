@@ -9,7 +9,9 @@
   },
   "description": "A Derby JS component for editing images.",
   "keywords": [
+    "component",
     "derby",
+    "derby-component",
     "image",
     "edit",
     "photo",

@@ -56,14 +56,6 @@ Component.prototype.init = function (model, dom) {
     }
   );
 
-  // the mimetype of the target image
-  // defaults to the source image file type
-  model.start('_mimetype', 'fileType', 'from.data.type',
-    function (fileType, imageType) {
-      return fileType ? ('image/' + fileType) : imageType;
-    }
-  );
-
   this.on('change', function (matrix) {
     model.set('_matrix', matrix);
   });
@@ -88,6 +80,7 @@ Component.prototype.create = function (model, dom) {
   // draw the image to match the user's zoom/pan preference
   var wait = model.setNull('debounce', 100);
   var draw = debounce(this.draw, wait).bind(this);
+  model.on('change', 'filetype', draw);
   model.on('change', 'from.image', draw);
   model.on('change', 'to.width', draw);
   model.on('change', 'to.height', draw);
@@ -112,6 +105,7 @@ Component.prototype.draw = function () {
   var from = model.get('from.image');
   var maxScale = model.get('_maxScale');
   var matrix = model.get('_matrix');
+  var mimetype = 'image/' + model.get('filetype') || 'png';
   var offsetX = .5 * model.get('_containerWidth') * (matrix[0] - 1);
   var offsetY = offsetX * model.get('from.height') / model.get('from.width');
   var translateX = model.get('_ratioX') * (matrix[4] - offsetX);
@@ -134,7 +128,7 @@ Component.prototype.draw = function () {
   canvas.height = model.get('to.height');
   ctx.transform.apply(ctx, toMatrix);
   ctx.drawImage(from, 0, 0);
-  to.src = canvas.toDataURL(model.get('_mimetype'));
+  to.src = canvas.toDataURL(mimetype);
 };
 
 Component.prototype.edit = function () {
@@ -154,34 +148,34 @@ Component.prototype.edit = function () {
   this.image.src = img.src;
 };
 
-Component.prototype.load = function (file) {
-  var self = this;
-  var model = this.model;
+Component.prototype.load = function (data) {
   var img = new Image();
+  var model = this.model;
   var reader = new FileReader();
 
-  if (!file) {
+  if (!data) {
     this.image.src = '';
     return model.del('from.image');
-  }
-
-  if (file[0]) {
-    file = file[0];
   }
 
   img.onload = function (e) {
     model.set('from.image', img);
   };
 
-  if (typeof file === 'string') {
-    return img.src = file;
+  // currently supports only one image
+  if (data[0]) data = data[0];
+
+  // data is an image uri
+  if (typeof data === 'string') {
+    return img.src = data;
   }
 
+  // otherwise data is a file
   reader.onload = function (e) {
     img.src = e.target.result;
   };
 
-  reader.readAsDataURL(file);
+  reader.readAsDataURL(data);
 }
 
 module.exports = Component;

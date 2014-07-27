@@ -77,7 +77,7 @@ Options
 
 **debounce** - The wait time before a re-draw occurs after a change.
 
-**fileType** - The file type to draw the image as. By default it will use the same file type as the original image.
+**filetype** - The file type to draw the image as. By default it will use the same file type as the original image.
 
 **size** - The width and height of the final image.
 
