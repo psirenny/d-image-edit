@@ -56,9 +56,9 @@ Component.prototype.init = function (model, dom) {
     }
   );
 
-  this.on('change', function (matrix) {
-    model.set('_matrix', matrix);
-  });
+  //this.on('change', function (matrix) {
+    //model.set('_matrix', matrix);
+  //});
 
   // whether or not panzoom can scale
   // may be used to determine whether or not to show zoom in, zoom out, etc.
