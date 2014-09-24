@@ -27,7 +27,7 @@ Usage
 
 Create a view:
 
-    <edit:>
+    <index: element="image-edit">
       <div as="container">
         <img alt="" as="image" src="{{@src}}">
       </div>
@@ -40,7 +40,7 @@ Create a view:
 
 Associate the view with the component:
 
-    app.use('edit', require('d-image-edit'));
+    app.use('image-edit', require('d-image-edit'));
 
 Use the view:
 
