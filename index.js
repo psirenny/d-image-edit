@@ -1,7 +1,7 @@
 var debounce = require('debounce');
 var Panzoom = require('d-panzoom');
 
-function Component () {};
+function Component () {}
 
 Component.prototype = Object.create(Panzoom.prototype);
 
@@ -56,9 +56,9 @@ Component.prototype.init = function (model, dom) {
     }
   );
 
-  //this.on('change', function (matrix) {
-    //model.set('_matrix', matrix);
-  //});
+  this.on('change', function (matrix) {
+    model.set('_matrix', matrix);
+  });
 
   // whether or not panzoom can scale
   // may be used to determine whether or not to show zoom in, zoom out, etc.
@@ -120,7 +120,7 @@ Component.prototype.draw = function () {
   var maxScale = model.get('_maxScale');
   var matrix = model.get('_matrix');
   var mimetype = 'image/' + model.get('filetype') || 'png';
-  var offsetX = .5 * model.get('_containerWidth') * (matrix[0] - 1);
+  var offsetX = 0.5 * model.get('_containerWidth') * (matrix[0] - 1);
   var offsetY = offsetX * model.get('from.height') / model.get('from.width');
   var translateX = model.get('_ratioX') * (matrix[4] - offsetX);
   var translateY = model.get('_ratioY') * (matrix[5] - offsetY);
@@ -164,7 +164,8 @@ Component.prototype.load = function (data) {
 
   // data is an image uri
   if (typeof data === 'string') {
-    return img.src = data;
+    img.src = data;
+    return;
   }
 
   // otherwise data is a file
@@ -173,6 +174,6 @@ Component.prototype.load = function (data) {
   };
 
   reader.readAsDataURL(data);
-}
+};
 
 module.exports = Component;
