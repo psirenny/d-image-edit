@@ -4,7 +4,7 @@
     "url": "https://github.com/psirenny/d-image-edit/issues"
   },
   "dependencies": {
-    "d-panzoom": "^0.1.1",
+    "d-panzoom": "^0.1.2",
     "debounce": "^1.0.0"
   },
   "description": "A Derby JS component for editing images.",
